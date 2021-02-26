@@ -40,16 +40,17 @@
   /* constant.  This must not be changed without recompiling the      */
   /* decNumber library modules. */
 
-  #define DECDPUN 3           /* DECimal Digits Per UNit [must be >0  */
+  #define DECDPUN 2           /* DECimal Digits Per UNit [must be >0  */
                               /* and <10; 3 or powers of 2 are best]. */
 
   /* DECNUMDIGITS is the default number of digits that can be held in */
   /* the structure.  If undefined, 1 is assumed and it is assumed     */
   /* that the structure will be immediately followed by extra space,  */
   /* as required.  DECNUMDIGITS is always >0.                         */
-  #if !defined(DECNUMDIGITS)
-    #define DECNUMDIGITS 1
-  #endif
+  //#if !defined(DECNUMDIGITS)
+  //  #define DECNUMDIGITS 1
+  //#endif
+  #define DECNUMDIGITS 62
 
   /* The size (integer data type) of each unit is determined by the   */
   /* number of digits it will hold.                                   */
