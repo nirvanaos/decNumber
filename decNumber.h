@@ -65,7 +65,7 @@
   #define DECNUMUNITS ((DECNUMDIGITS+DECDPUN-1)/DECDPUN)
 
   /* The data structure... */
-  typedef struct {
+  typedef struct _decNumber {
     int32_t digits;      /* Count of digits in the coefficient; >0    */
     int32_t exponent;    /* Unadjusted exponent, unbiased, in         */
                          /* range: -1999999997 through 999999999      */
