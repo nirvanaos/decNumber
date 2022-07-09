@@ -347,7 +347,10 @@ decNumber * decNumberFromInt32(decNumber *dn, Int in) {
 decNumber * decNumberFromInt64(decNumber *dn, Long in) {
   uLong unsig;
   if (in>=0) unsig=in;
-   else unsig=-(uLong)in;
+  else {
+   if (in == 0x8000000000000000) unsig = in;
+    else unsig = -in;
+  }
   decNumberFromUInt64(dn, unsig);
   if (in<0) dn->bits=DECNEG;
   return dn;
