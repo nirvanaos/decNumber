@@ -98,11 +98,15 @@
   /* Conversions                                                      */
   decNumber * decNumberFromInt32(decNumber *, int32_t);
   decNumber * decNumberFromUInt32(decNumber *, uint32_t);
+  decNumber * decNumberFromInt64 (decNumber*, int64_t);
+  decNumber * decNumberFromUInt64 (decNumber*, uint64_t);
   decNumber * decNumberFromString(decNumber *, const char *, decContext *);
   char      * decNumberToString(const decNumber *, char *);
   char      * decNumberToEngString(const decNumber *, char *);
   uint32_t    decNumberToUInt32(const decNumber *, decContext *);
   int32_t     decNumberToInt32(const decNumber *, decContext *);
+  uint64_t    decNumberToUInt64 (const decNumber*, decContext*);
+  int64_t     decNumberToInt64 (const decNumber*, decContext*);
   uint8_t   * decNumberGetBCD(const decNumber *, uint8_t *);
   decNumber * decNumberSetBCD(decNumber *, const uint8_t *, uint32_t);
 

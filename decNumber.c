@@ -344,6 +344,15 @@ decNumber * decNumberFromInt32(decNumber *dn, Int in) {
   return dn;
   } // decNumberFromInt32
 
+decNumber * decNumberFromInt64(decNumber *dn, Long in) {
+  uLong unsig;
+  if (in>=0) unsig=in;
+   else unsig=-(uLong)in;
+  decNumberFromUInt64(dn, unsig);
+  if (in<0) dn->bits=DECNEG;
+  return dn;
+  } // decNumberFromInt64
+
 decNumber * decNumberFromUInt32(decNumber *dn, uInt uin) {
   Unit *up;                             // work pointer
   decNumberZero(dn);                    // clean
@@ -355,6 +364,18 @@ decNumber * decNumberFromUInt32(decNumber *dn, uInt uin) {
   dn->digits=decGetDigits(dn->lsu, up-dn->lsu);
   return dn;
   } // decNumberFromUInt32
+
+decNumber * decNumberFromUInt64(decNumber *dn, uLong uin) {
+  Unit *up;
+  decNumberZero(dn);
+  if (uin == 0) return dn;
+  for (up=dn->lsu; uin>0; up++) {
+    *up=(Unit)(uin%(DECDPUNMAX+1));
+    uin=uin/(DECDPUNMAX+1);
+    }
+  dn->digits=decGetDigits(dn->lsu, up-dn->lsu);
+  return dn;
+  } // decNumberFromUInt64
 
 /* ------------------------------------------------------------------ */
 /* to-int32 -- conversion to Int or uInt                              */
@@ -402,6 +423,33 @@ Int decNumberToInt32(const decNumber *dn, decContext *set) {
   return 0;
   } // decNumberToInt32
 
+Long decNumberToInt64(const decNumber *dn, decContext *set) {
+  if (dn->bits&DECSPECIAL || dn->digits>19 || dn->exponent!=0) ;
+   else {
+    Int d;
+    const Unit *up;
+    uLong hi=0, lo;
+    up=dn->lsu;
+    lo=*up;
+    #if DECDPUN>1
+      hi=lo/10;
+      lo=lo%10;
+    #endif
+    up++;
+    for (d=DECDPUN; d<dn->digits; up++, d+=DECDPUN) hi+=*up*bigpowers[d-1];
+    if (hi>922337203685477580 || (hi==922337203685477580 && lo>7)) {
+      if (dn->bits&DECNEG && hi==922337203685477580 && lo==8) return 0x8000000000000000;
+      }
+    else {
+      Long i=X10(hi)+lo;
+      if (dn->bits&DECNEG) return -i;
+      return i;
+      }
+    }
+  decContextSetStatus(set, DEC_Invalid_operation);
+  return 0;
+  } // decNumberToInt64
+
 uInt decNumberToUInt32(const decNumber *dn, decContext *set) {
   #if DECCHECK
   if (decCheckOperands(DECUNRESU, DECUNUSED, dn, set)) return 0;
@@ -430,6 +478,55 @@ uInt decNumberToUInt32(const decNumber *dn, decContext *set) {
   decContextSetStatus(set, DEC_Invalid_operation); // [may not return]
   return 0;
   } // decNumberToUInt32
+
+uLong decNumberToUInt64(const decNumber *dn, decContext *set) {
+  if (dn->bits&DECSPECIAL || dn->digits>20 || dn->exponent!=0
+    || (dn->bits&DECNEG && !ISZERO(dn)));
+   else {
+    Int d;
+    const Unit *up;
+    uLong hi=0, lo;
+    up=dn->lsu;
+    lo=*up;
+    #if DECDPUN>1
+      hi=lo/10;
+      lo=lo%10;
+    #endif
+    up++;
+    for (d=DECDPUN; d<dn->digits; up++, d+=DECDPUN) hi+=*up*bigpowers[d-1];
+    if (hi>1844674407370955161 || (hi==1844674407370955161 && lo>5)) ;
+     else return X10(hi)+lo;
+    }
+  decContextSetStatus(set, DEC_Invalid_operation);
+  return 0;
+  }  // decNumberToUInt64
+
+int32_t decNumberIsInt(const decNumber *dn) {
+  const Unit *up=dn->lsu;
+  if (dn->exponent>=0) {
+    return 1;
+    }
+   else {
+    Int count=-dn->exponent;
+    // spin up whole units until reach the Unit with the unit digit
+    for (; count>=DECDPUN; up++) {
+      if (*up!=0) return 0;
+      count-=DECDPUN;
+      }
+    if (count==0) return 1;             // [a multiple of DECDPUN]
+     else {                             // [not multiple of DECDPUN]
+      Int rem;                          // work
+      // slice off fraction digits and check for non-zero
+      #if DECDPUN<=4
+        rem=*up-QUOT10(*up, count)*powers[count];
+      #else
+        rem=*up%powers[count];          // slice off discards
+      #endif
+      if (rem!=0) return 0;
+      }
+    }
+    return 1;
+  }  // decNumberIsInt
 
 /* ------------------------------------------------------------------ */
 /* to-scientific-string -- conversion to numeric string               */
